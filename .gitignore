@@ -1,1 +1,7 @@
+# General Python
+**/*.log
 **/__pycache__/**
+
+# Django
+**/db.sqlite3
+**/settings.py
