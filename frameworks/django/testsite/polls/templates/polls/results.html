@@ -1,0 +1,13 @@
+<h1>{{title}}</h1>
+<ul>
+    <!--
+        This could've also been done using question.choice_set.all
+        (like in https://docs.djangoproject.com/en/5.0/intro/tutorial04/)
+        however, I will leave as is since it was good practice to try doing it
+        myself first.
+    -->
+    {% for choice in choices %}
+        <li>Choice: {{choice.choice_text}} has {{choice.votes}} vote{{choice.votes|pluralize}}</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'polls:detail' question.id %}">Vote again?</a>
