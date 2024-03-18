@@ -1,46 +1,48 @@
+from typing import Any
 from django.db.models import F
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.views import generic
+
 from .models import Choice, Question
 
-""" longform render HttpResponse with template
-def index(request):
-    latest_question_list = Question.objects.order_by("-pub_date")[:5]
-    template = loader.get_template("polls/index.html")
-    context = {
-        "latest_question_list": latest_question_list,
-    }
-    return HttpResponse(template.render(context, request))
-"""
 
-# Shortcut render
-def index(request):
-    latest_question_list = Question.objects.order_by("-pub_date")[:5]
-    context = {
-        "latest_question_list": latest_question_list,
-    }
-    return render(request, "polls/index.html", context)
+class IndexView(generic.ListView):
+    template_name = "polls/index.html"
+    context_object_name = "latest_question_list"
 
-# Longform 404
-"""
-def detail(request, question_id):
-    try:
-        question = Question.objects.get(pk=question_id)
-    except Question.DoesNotExist:
-        raise Http404("Question does not exist")
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by("-pub_date")[:5]
 
-    context = {
-        "question": question
-    }
-    return render(request, "polls/detail.html", context)
-    # old stub
-    #return HttpResponse("You're looking at question %s." % question_id)
-"""
 
-def detail(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, "polls/detail.html", {"question": question})
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = "polls/detail.html"
+
+
+
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = "polls/results.html"
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        print("kwargs query param test")
+        print(kwargs)
+        #There's probably an easier way to get the PK,
+        # but it's not given within the DetailView the same way it is in the
+        # manual style(see views.py.old), so...
+        question_id = int(self.request.path.split("/")[2])
+
+        choices = Choice.objects.filter(question=question_id)[:]
+
+        context = super().get_context_data(**kwargs)
+        context["subtitle"] = "This the subtitle from my added context"
+        context["choices"] = choices
+        return context
+
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
@@ -63,18 +65,3 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse("polls:results", args=(question.id,)))
-
-# Stub
-def results(request, question_id):
-    #this could've been done with just question (as in the tutorial part 4 example)
-    # but I'll leave it as-is since i learned something.
-    question = Question.objects.get(pk=question_id)
-    choices = Choice.objects.filter(question=question_id)[:]
-    response = "You're looking at the result of question %s." % question_id
-    context = {
-        'title': question.question_text,
-        'subtitle': response,
-        'question': question,
-        'choices': choices
-    }
-    return render(request, "polls/results.html", context)
