@@ -1,3 +1,4 @@
+#UI/Generic imports
 from typing import Any
 from django.db.models import F
 from django.http import HttpResponseRedirect
@@ -6,7 +7,12 @@ from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
 
+#API imports
+from rest_framework import viewsets
+from .serializers import ChoiceSerializer, QuestionSerializer
+
 from .models import Choice, Question
+
 
 
 class IndexView(generic.ListView):
@@ -74,3 +80,11 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse("polls:results", args=(question.id,)))
+
+class ChoiceViewSet(viewsets.ModelViewSet):
+    queryset = Choice.objects.all().order_by('choice_text')
+    serializer_class = ChoiceSerializer
+
+class QuestionViewSet(viewsets.ModelViewSet):
+    queryset = Question.objects.all().order_by('-pub_date')
+    serializer_class = QuestionSerializer
