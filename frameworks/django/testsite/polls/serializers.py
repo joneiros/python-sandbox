@@ -10,4 +10,4 @@ class ChoiceSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ('question_text', 'pub_date')
+        fields = ('id', 'question_text', 'pub_date')
